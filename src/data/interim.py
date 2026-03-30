@@ -1,4 +1,4 @@
-#This script extracts the data
+# This script extracts the data
 from pathlib import Path
 import pdfplumber
 import pandas as pd

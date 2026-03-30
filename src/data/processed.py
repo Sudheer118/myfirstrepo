@@ -1,4 +1,4 @@
-#This script maps the data with Lgd codes 
+# This script maps the data with Lgd codes 
 import pandas as pd
 import numpy as np
 from pathlib import Path

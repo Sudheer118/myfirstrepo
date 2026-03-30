@@ -7,7 +7,7 @@
 - **Resource Name**: agriculture wages
 - **Data Extraction Link:** [Agriculural_wages](https://desagri.gov.in/document-report-category/agriculture-wages-in-india/)
 
-- **Description:** The Agricultural wages data provided by the Ministry of Agriculture, Govt of India. It provides information on the average daily wages paid to agricultural laborers in India. The data covers different types of agricultural work, such as ploughing, sowing, harvesting, and threshing, and is broken down by state and district. The dataset also includes information on the minimum wages set by the government for different types of work for each month. The data is available for up to 10 years.
+- **Description:** The Agricultural wages data provided by the Ministry of Agriculture, Govt of India. It provides information on the average daily wages paid to agricultural laborers in India. The data covers different types of agricultural work, such as ploughing, sowing, harvesting, and threshing, and is broken down by state and district. The dataset also includes information on the minimum wages set by the government for different types of work for each month. The data is available for up to 10 years .
 
 - **Raw Data Location:** dev-data-2/moafw-agricultural_wages-ol-mn-aji/data/raw
 - **Interim Data Location:** dev-data-2/moafw-agricultural_wages-ol-mn-aji/data/interim

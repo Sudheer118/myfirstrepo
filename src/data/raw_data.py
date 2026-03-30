@@ -1,4 +1,4 @@
-# This script downloads the raw pdfs
+#This script downloads the raw pdfs
 import requests
 from bs4 import BeautifulSoup
 from urllib.parse import urljoin

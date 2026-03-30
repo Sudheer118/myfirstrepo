@@ -1,3 +1,4 @@
+#pyproject.toml
 [tool.poetry]
 name = "agri_wages_pr"
 version = "0.1.0"
