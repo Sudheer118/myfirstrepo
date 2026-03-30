@@ -1,0 +1,23 @@
+[tool.poetry]
+name = "agri_wages_pr"
+version = "0.1.0"
+description = ""
+authors = ["sudheer"]
+
+[tool.poetry.dependencies]
+python = ">=3.10,<4.0"
+python-dotenv = ">=0.13.0"
+click = ">=7.1.2"
+pandas = ">=1.4.0"
+numpy = ">=1.23.0"
+wasabi = {path="../../libs/wasabi"}
+bs4 = "^0.0.2"
+pdfplumber = "^0.11.8"
+rapidfuzz = "^3.14.3"
+
+[tool.poetry.dev-dependencies]
+pytest = "^5.2"
+
+[build-system]
+requires = ["poetry>=0.12"]
+build-backend = "poetry.masonry.api"
