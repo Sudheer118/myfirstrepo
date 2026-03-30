@@ -1,18 +1,8 @@
 
-# dbt
+# empf
 ## Package Information
-- **Package Name**: Direct Benefit Transfer
-- **Source Name**:Ministry of Agriculture & Farmers Welfare
-- **SKU**: {moafw-dbt_scheme_wise-dt-yr-abc}
-- **Resource Name**: DBT Scheme wise
-
-- **Data Extraction Link:** [DBT-Scheme wise](https://dbtdacfw.gov.in/DashboardScheme.aspx?Type=scheme)
-
-- **Description:** The dataset explains how financial assistance under agricultural schemes is distributed to beneficiaries across districts in India. It helps assess beneficiary coverage, digital linkage, and fund flow patterns, supporting monitoring and analysis of scheme implementation and DBT performance.
-
-- **Raw Data Location:** dev-data-2/moafw-dbt_scheme_wise-dt-yr-abc/data/raw
-- **Processed Data Location:** dev-data-2/moafw-dbt_scheme_wise-dt-yr-abc/data/processed
-- **External Data Location:** dev-data-2/moafw-dbt_scheme_wise-dt-yr-abc
+- **Package Name**: payroll
+- **Source Name**: ministry of labour and employment
 
 
 ## Project Structure
