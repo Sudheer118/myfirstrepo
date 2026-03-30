@@ -1,118 +1,111 @@
-# This script downloads the raw pdfs
 import requests
 from bs4 import BeautifulSoup
-from urllib.parse import urljoin
+import csv
 from pathlib import Path
+import re
 
-
-# CONFIG
-
-BASE = "https://desagri.gov.in"
-AJAX = f"{BASE}/wp-admin/admin-ajax.php"
-URL  = f"{BASE}/document-report-category/agriculture-wages-in-india/"
-
-OUT_DIR = Path(__file__).resolve().parents[2] / "data/raw"
-OUT_DIR.mkdir(parents=True, exist_ok=True)
-
-SKIP_PREFIXES = ("ann", "om")
-SKIP_CONTAINS = ("modified-final-manucript-2019-20",)
-
-
-# SESSION
-
+BASE_URL = "https://dbtdacfw.gov.in/DashboardScheme.aspx?Type=scheme"
+HEADERS = {"User-Agent": "Mozilla/5.0"}
 session = requests.Session()
-session.headers.update({
-    "User-Agent": "Mozilla/5.0",
-    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-    "Accept-Language": "en-US,en;q=0.5",
-})
 
 
-# UTILITIES
-
-def get_year_ids(page_url):
-    r = session.get(page_url, timeout=30)
-    r.raise_for_status()
-    soup = BeautifulSoup(r.text, "html.parser")
-
-    return [
-        opt["value"]
-        for opt in soup.select("#year_filter_sess option")
-        if opt.get("value")
-    ]
-
-def fetch_year_html(year_id):
-    payload = {
-        "action": "yearFilter",
-        "year_sess_catId": year_id,
-        "cat_id": 39,
-        "tax_id": "document-report-category",
+def get_hidden(soup):
+    return {
+        tag["id"]: tag.get("value", "")
+        for tag in soup.select("#__VIEWSTATE, #__VIEWSTATEGENERATOR, #__EVENTVALIDATION")
     }
 
-    r = session.post(
-        AJAX,
-        data=payload,
-        headers={"Referer": URL},
-        timeout=30,
-    )
-    r.raise_for_status()
-    return r.text
 
-def extract_pdf_from_post(post_url):
-    r = session.get(post_url, timeout=30)
-    r.raise_for_status()
+def postback(url, soup, href):
+    """Handles ASP.NET postback click events using regex (safer)."""
+    match = re.search(r"__doPostBack\('(.+?)','(.*?)'\)", href)
+    if not match:
+        return None, None
+    target, argument = match.groups()
+
+    data = get_hidden(soup)
+    data["__EVENTTARGET"], data["__EVENTARGUMENT"] = target, argument
+
+    r = session.post(url, data=data, headers=HEADERS)
+    return r.url, BeautifulSoup(r.text, "html.parser")
+
+
+def get_years():
+    r = session.get(BASE_URL, headers=HEADERS)
     soup = BeautifulSoup(r.text, "html.parser")
-
-    a = soup.select_one("a[href$='.pdf']")
-    return urljoin(BASE, a["href"]) if a else None
-
-def download_pdf(pdf_url):
-    filename = Path(pdf_url).name
-    filename_lc = filename.lower()
-
-    if filename_lc.startswith(SKIP_PREFIXES):
-        return
-
-    if any(s in filename_lc for s in SKIP_CONTAINS):
-        return
-
-    file_path = OUT_DIR / filename
-    if file_path.exists():
-        return
-
-    with session.get(pdf_url, stream=True, timeout=30) as r:
-        r.raise_for_status()
-        with file_path.open("wb") as f:
-            for chunk in r.iter_content(8192):
-                if chunk:
-                    f.write(chunk)
-
-    print("Downloaded:", filename)
+    return [
+        (opt["value"], opt.text.strip())
+        for opt in soup.select("#ContentPlaceHolder1_ddlFinyear option")
+        if opt["value"] != "0"
+    ]
 
 
-# PROCESS PAGE
-
-def process_page():
-    print("Downloading Agriculture Wages data")
-    year_ids = get_year_ids(URL)
-
-    for year_id in year_ids:
-        html = fetch_year_html(year_id)
-        soup = BeautifulSoup(html, "html.parser")
-
-        # Direct PDF links
-        for a in soup.select("a[href$='.pdf']"):
-            download_pdf(urljoin(BASE, a["href"]))
-
-        # PDFs inside document pages
-        for a in soup.select("a[href]"):
-            if "/document-report/" in a["href"]:
-                pdf_url = extract_pdf_from_post(urljoin(BASE, a["href"]))
-                if pdf_url:
-                    download_pdf(pdf_url)
+def load_year_page(year_val):
+    r = session.get(BASE_URL, headers=HEADERS)
+    soup = BeautifulSoup(r.text, "html.parser")
+    data = get_hidden(soup)
+    data["ctl00$ContentPlaceHolder1$ddlFinyear"] = year_val
+    data["ctl00$ContentPlaceHolder1$btnSearch"] = "Search"
+    r2 = session.post(BASE_URL, data=data, headers=HEADERS)
+    return BeautifulSoup(r2.text, "html.parser")
 
 
-# RUN
+def scrape_year(year_val, year_txt, file):
+    print(f"\n Year: {year_txt}")
+    soup = load_year_page(year_val)
 
-process_page()
-print("DATA DOWNLOAD COMPLETED")
+    schemes = [
+        (a.text.strip(), a["href"])
+        for a in soup.find_all("a")
+        if "lkbScheme" in a.get("id", "")
+    ]
+
+    header_written = False
+
+    with open(file, "w", newline="", encoding="utf-8-sig") as f:
+        writer = csv.writer(f)
+
+        for scheme_name, href in schemes:
+            print(f"  → Scheme: {scheme_name}")
+            scheme_url, scheme_page = postback(BASE_URL, soup, href)
+
+            state_table = scheme_page.find("table", id="ContentPlaceHolder1_GridView1")
+            if not state_table:
+                continue
+
+            for a in state_table.find_all("a"):
+                state_name = a.text.strip()
+                print(f"     - State: {state_name}")
+
+                _, district_page = postback(scheme_url, scheme_page, a["href"])
+                district_table = district_page.find("table", id="ContentPlaceHolder1_GridView2")
+
+                if not district_table:
+                    continue
+
+                headers = ["Year", "Scheme", "State"] + [
+                    h.text.strip() for h in district_table.find_all("th")
+                ]
+
+                if not header_written:
+                    writer.writerow(headers)
+                    header_written = True
+
+                for tr in district_table.find_all("tr")[1:]:
+                    vals = [td.text.strip() for td in tr.find_all("td")]
+                    if vals:
+                        writer.writerow([year_txt, scheme_name, state_name] + vals)
+
+
+def main():
+    output = Path(__file__).resolve().parents[2] / "data/raw"
+    output.mkdir(parents=True, exist_ok=True)
+
+    for year_val, year_txt in get_years():
+        file = output / f"DBT_{year_txt}.csv"
+        scrape_year(year_val, year_txt, file)
+        print(f" Saved → {file}")
+
+
+if __name__ == "__main__":
+    main()

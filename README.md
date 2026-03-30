@@ -1,23 +1,19 @@
 
-# agri_wages_pr
+# dbt
 ## Package Information
-- **Package Name**: agriculture wages
-- **Source Name**: Ministry of Agriculture & Farmers Welfare
-**SKU**: {moafw-agricultural_wages-ol-mn-aji}
-- **Resource Name**: agriculture wages
-- **Data Extraction Link:** [Agriculural_wages](https://desagri.gov.in/document-report-category/agriculture-wages-in-india/)
+- **Package Name**: Direct Benefit Transfer
+- **Source Name**:Ministry of Agriculture & Farmers Welfare
+- **SKU**: {moafw-dbt_scheme_wise-dt-yr-abc}
+- **Resource Name**: DBT Scheme wise
 
-- **Description:** The Agricultural wages data provided by the Ministry of Agriculture, Govt of India. It provides information on the average daily wages paid to agricultural laborers in India. The data covers different types of agricultural work, such as ploughing, sowing, harvesting, and threshing, and is broken down by state and district. The dataset also includes information on the minimum wages set by the government for different types of work for each month. The data is available for up to 10 years.
+- **Data Extraction Link:** [DBT-Scheme wise](https://dbtdacfw.gov.in/DashboardScheme.aspx?Type=scheme)
 
-- **Raw Data Location:** dev-data-2/moafw-agricultural_wages-ol-mn-aji/data/raw
-- **Interim Data Location:** dev-data-2/moafw-agricultural_wages-ol-mn-aji/data/interim
-- **Pre_processed data Data Location:** dev-data-2/moafw-agricultural_wages-ol-mn-aji/data/processed
-- **Processed Data Location:** dev-data-2/moafw-agricultural_wages-ol-mn-aji/data/processed
+- **Description:** The dataset explains how financial assistance under agricultural schemes is distributed to beneficiaries across districts in India. It helps assess beneficiary coverage, digital linkage, and fund flow patterns, supporting monitoring and analysis of scheme implementation and DBT performance.
 
--**raw_data.py** : This file downloads the raw pdf's
--**interim.py** : This file extracts the data from pdf's
--**pre_processed.py** : This file process the data
--**processed.py** : This file maps the codes using Lgd mapping file
+- **Raw Data Location:** dev-data-2/moafw-dbt_scheme_wise-dt-yr-abc/data/raw
+- **Processed Data Location:** dev-data-2/moafw-dbt_scheme_wise-dt-yr-abc/data/processed
+- **External Data Location:** dev-data-2/moafw-dbt_scheme_wise-dt-yr-abc
+
 
 ## Project Structure
 ------------

@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "agri_wages_pr"
+name = "dbt"
 version = "0.1.0"
 description = ""
 authors = ["sudheer"]
@@ -11,8 +11,9 @@ click = ">=7.1.2"
 pandas = ">=1.4.0"
 numpy = ">=1.23.0"
 wasabi = {path="../../libs/wasabi"}
+requests = "^2.32.5"
 bs4 = "^0.0.2"
-pdfplumber = "^0.11.8"
+lxml = "^6.0.2"
 rapidfuzz = "^3.14.3"
 
 [tool.poetry.dev-dependencies]
