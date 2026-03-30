@@ -1,103 +1,93 @@
-from urllib.parse import urljoin, urlparse
-from pathlib import Path
+#CODE TO DOWNLOAD 2023 RAW FILE
 import requests
 from bs4 import BeautifulSoup
+from urllib.parse import urljoin
+from pathlib import Path
 import urllib3
 
-# Disable HTTPS certificate warnings
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 
-def make_session() -> requests.Session:
-    """Create a configured requests session."""
-    session = requests.Session()
-    session.headers.update({
-        "User-Agent": (
-            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
-            "AppleWebKit/537.36 (KHTML, like Gecko) "
-            "Chrome/115.0 Safari/537.36"
-        )
-    })
-    return session
+# BASE URL
 
 
-def filename_from_url(url: str) -> str:
-    """Extract filename from URL."""
-    return Path(urlparse(url).path).name or "download.pdf"
+base_url = "https://fsi.nic.in/forest-report-2023"
+
+pdf_path = Path(__file__).resolve().parents[2] / "data/raw"
+pdf_path.mkdir(parents=True, exist_ok=True)
 
 
-def get_pdf_links(session: requests.Session, page_url: str) -> list[dict]:
-    """Extract PDF links categorized by 'Overall', 'State', and 'Bank'."""
-    print(f"Fetching page: {page_url}")
-    resp = session.get(page_url, timeout=30, verify=False)
-    resp.raise_for_status()
-
-    soup = BeautifulSoup(resp.content, "html.parser")
-    links = []
-
-    for a in soup.find_all("a", href=True):
-        href = a["href"].strip()
-        if not href.lower().endswith(".pdf"):
-            continue
-
-        full_url = urljoin(page_url, href)
-        href_lower = href.lower()
-
-        if "overall" in href_lower:
-            category = "Overall"
-        elif "state" in href_lower:
-            category = "State"
-        elif "bank" in href_lower:
-            category = "Bank"
-        else:
-            continue
-
-        links.append({"url": full_url, "category": category})
-
-    print(f"Found {len(links)} PDF links.")
-    return links
+# GET YEAR LINKS
 
 
-def download_pdfs(session: requests.Session, links: list[dict], data_dir: Path):
-    """Download PDFs into subfolders by category."""
-    for item in links:
-        url = item["url"]
-        category = item["category"]
+response = requests.get(base_url, verify=False)
+soup = BeautifulSoup(response.text, "html.parser")
 
-        category_dir = data_dir / category
-        category_dir.mkdir(parents=True, exist_ok=True)
+years_data = []
 
-        filepath = category_dir / filename_from_url(url)
+for a_tag in soup.find_all("a", class_="megamenu_a"):
 
-        if filepath.exists():
-            print(f"Skipped (exists): {filepath.name}")
-            continue
+    title = a_tag.get("title", "")
 
-        print(f"Downloading: {filepath.name}")
-        try:
-            with session.get(url, stream=True, timeout=60, verify=False) as r:
-                r.raise_for_status()
-                with filepath.open("wb") as f:
-                    for chunk in r.iter_content(1024 * 64):
-                        if chunk:
-                            f.write(chunk)
-            print(f"Saved: {filepath}")
-        except requests.exceptions.RequestException as e:
-            print(f"Failed to download {filepath.name}: {e}")
+    for year in range(2015, 2024):
+
+        if str(year) in title:
+
+            full_url = urljoin(base_url, a_tag.get("href"))
+            years_data.append((year, full_url))
+
+years_data.sort(reverse=True)
+
+print("\nDetected Years:")
+
+for year, link in years_data:
+    print(f"Year {year} -> {link}")
 
 
-if __name__ == "__main__":
-    print("Starting Mudra PDF scraping pipeline...")
+# DOWNLOAD VOLUME 2 PDF
 
-    base_url = "https://www.mudra.org.in"
-    page_url = f"{base_url}/Home/ShowPDF"
-    output_path = Path(__file__).resolve().parents[2]
-    data_dir = output_path / "data" / "raw"
-    
-    data_dir.mkdir(parents=True, exist_ok=True)
 
-    session = make_session()
-    pdf_links = get_pdf_links(session, page_url)
-    download_pdfs(session, pdf_links, data_dir)
+for year, link in years_data:
 
-    print("All PDFs downloaded and organized successfully!")
+    print(f"\nChecking Year {year}...")
+
+    year_folder = pdf_path / str(year)
+    year_folder.mkdir(exist_ok=True)
+
+    year_response = requests.get(link, verify=False)
+    year_soup = BeautifulSoup(year_response.text, "html.parser")
+
+    vol2_found = False
+
+    for a_tag in year_soup.find_all("a"):
+
+        img = a_tag.find("img")
+
+        if img:
+
+            src = img.get("src", "").lower()
+
+            if "vol-2" in src:
+
+                pdf_href = a_tag.get("href")
+
+                if pdf_href and pdf_href.lower().endswith(".pdf"):
+
+                    pdf_url = urljoin(link, pdf_href)
+
+                    print("Downloading:", pdf_url)
+
+                    pdf_response = requests.get(pdf_url, verify=False)
+
+                    file_path = year_folder / f"ISFR_Vol2_{year}.pdf"
+
+                    with open(file_path, "wb") as f:
+                        f.write(pdf_response.content)
+
+                    print("Saved:", file_path)
+
+                    vol2_found = True
+                    break
+
+    if not vol2_found:
+        print("Volume 2 PDF not found")
