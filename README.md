@@ -1,19 +1,15 @@
 
-# dbt
+# ddu-gky
 ## Package Information
-- **Package Name**: Direct Benefit Transfer
-- **Source Name**:Ministry of Agriculture & Farmers Welfare
-- **SKU**: {moafw-dbt_scheme_wise-dt-yr-abc}
-- **Resource Name**: DBT Scheme wise
+- **Package Name**: ddu-gky
+- **Source Name**: Ministry of Rural Development
+- **Description**: This project aims to capture and analyze the Cumulative Progress of the Deen Dayal Upadhyaya Grameen Kaushalya Yojana (DDUGKY) program. The data is sourced from the official DDUGKY Dashboard available at https://kaushalbharat.gov.in/candidateview.
+ The process involves utilizing Beautiful Soup for both web scraping and data extraction, followed by data processing.The primary data source for this project is the DDUGKY Dashboard, which provides comprehensive information on the progress of the program. The data includes details such as the number of candidates trained, placed, and the overall performance metrics.
 
-- **Data Extraction Link:** [DBT-Scheme wise](https://dbtdacfw.gov.in/DashboardScheme.aspx?Type=scheme)
-
-- **Description:** The dataset explains how financial assistance under agricultural schemes is distributed to beneficiaries across districts in India. It helps assess beneficiary coverage, digital linkage, and fund flow patterns, supporting monitoring and analysis of scheme implementation and DBT performance.
-
-- **Raw Data Location:** dev-data-2/moafw-dbt_scheme_wise-dt-yr-abc/data/raw
-- **Processed Data Location:** dev-data-2/moafw-dbt_scheme_wise-dt-yr-abc/data/processed
-- **External Data Location:** dev-data-2/moafw-dbt_scheme_wise-dt-yr-abc
-
+- **Data Location**: dev-data-2/mord-ddugky_detailed_report-pl-ot-fhg
+- **Raw_data.py** : This file contains a script to extract the raw data.
+- **district_data.py** This file contains a script to extract the district level Tc data.
+- **processed_data.py** This file contains a script to process the raw data.
 
 ## Project Structure
 ------------
