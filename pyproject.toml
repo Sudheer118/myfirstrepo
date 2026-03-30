@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "e-NAM"
+name = "plfs"
 version = "0.1.0"
 description = ""
 authors = ["sudheer"]
@@ -11,6 +11,8 @@ click = ">=7.1.2"
 pandas = ">=1.4.0"
 numpy = ">=1.23.0"
 wasabi = {path="../../libs/wasabi"}
+requests = "^2.32.5"
+bs4 = "^0.0.2"
 
 [tool.poetry.dev-dependencies]
 pytest = "^5.2"

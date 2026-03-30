@@ -1,15 +1,21 @@
 
-# e-NAM
+# plfs
 ## Package Information
-- **Package Name**: Trde_Details
-- **Source Name**: Ministry of Agriculture & Farmers Welfare
-- **SKU**: {moafw-enam_mandis_trade_details-st-yr-abc}
-- **Resource Name**: Commodity wise trade details
-- **Data Extraction Link:** [e-NAM Mandis Trade Details](https://enam.gov.in/web/dashboard/trade-data)
-- **Description:** This dataset contains market-wise agricultural trade information including State, APMC, Commodity, price details (minimum, modal, and maximum), arrivals, quantity traded, unit, and date. The data is available for up to 10 years.
-- **Interim Data Location:** dev-data-2/moafw-enam_mandis_trade_details-st-yr-abc/data/interim
-- **Processed Data Location:** dev-data-2/mmoafw-enam_mandis_trade_details-st-yr-abc/data/processed
+- **Package Name**: Periodic Labour Force Survey
+- **Source Name**: Ministry Of Labour And Employment
 
+- **SKU**: {mole-plfs_annual_reports-st-yr-abc}
+- **Resource Name**: Annual PLFS Reports
+
+- **Data Extraction Link:** [PLFS-Reports](https://dge.gov.in/dge/reference-publication-reports-annual)
+
+- **Description:** The dataset provides a comprehensive snapshot of India’s labour market outcomes across states and population groups, with a strong focus on rural and urban differentials and male/female participation. It captures how education, age, income levels, and industrial sectors shape employment patterns, earnings, and work intensity. Sourced from official DGE reference publications and annual reports.
+
+
+- **Raw Data Location:** dev-data-2/mole-plfs_annual_reports-st-yr-abc/data/raw
+- **Inteim Data Location:** dev-data-2/mole-plfs_annual_reports-st-yr-abc/data/interim
+- **Processed Data Location:** dev-data-2/mole-plfs_annual_reports-st-yr-abc/data/processed
+- **External Data Location:** dev-data-2/mole-plfs_annual_reports-st-yr-abc/data/external
 
 ## Project Structure
 ------------
