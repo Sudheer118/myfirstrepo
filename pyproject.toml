@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "agri_wages_pr"
+name = "e-NAM"
 version = "0.1.0"
 description = ""
 authors = ["sudheer"]
@@ -11,9 +11,6 @@ click = ">=7.1.2"
 pandas = ">=1.4.0"
 numpy = ">=1.23.0"
 wasabi = {path="../../libs/wasabi"}
-bs4 = "^0.0.2"
-pdfplumber = "^0.11.8"
-rapidfuzz = "^3.14.3"
 
 [tool.poetry.dev-dependencies]
 pytest = "^5.2"

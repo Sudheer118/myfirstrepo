@@ -1,23 +1,15 @@
 
-# agri_wages_pr
+# e-NAM
 ## Package Information
-- **Package Name**: agriculture wages
+- **Package Name**: Trde_Details
 - **Source Name**: Ministry of Agriculture & Farmers Welfare
-**SKU**: {moafw-agricultural_wages-ol-mn-aji}
-- **Resource Name**: agriculture wages
-- **Data Extraction Link:** [Agriculural_wages](https://desagri.gov.in/document-report-category/agriculture-wages-in-india/)
+- **SKU**: {moafw-enam_mandis_trade_details-st-yr-abc}
+- **Resource Name**: Commodity wise trade details
+- **Data Extraction Link:** [e-NAM Mandis Trade Details](https://enam.gov.in/web/dashboard/trade-data)
+- **Description:** This dataset contains market-wise agricultural trade information including State, APMC, Commodity, price details (minimum, modal, and maximum), arrivals, quantity traded, unit, and date. The data is available for up to 10 years.
+- **Interim Data Location:** dev-data-2/moafw-enam_mandis_trade_details-st-yr-abc/data/interim
+- **Processed Data Location:** dev-data-2/mmoafw-enam_mandis_trade_details-st-yr-abc/data/processed
 
-- **Description:** The Agricultural wages data provided by the Ministry of Agriculture, Govt of India. It provides information on the average daily wages paid to agricultural laborers in India. The data covers different types of agricultural work, such as ploughing, sowing, harvesting, and threshing, and is broken down by state and district. The dataset also includes information on the minimum wages set by the government for different types of work for each month. The data is available for up to 10 years.
-
-- **Raw Data Location:** dev-data-2/moafw-agricultural_wages-ol-mn-aji/data/raw
-- **Interim Data Location:** dev-data-2/moafw-agricultural_wages-ol-mn-aji/data/interim
-- **Pre_processed data Data Location:** dev-data-2/moafw-agricultural_wages-ol-mn-aji/data/processed
-- **Processed Data Location:** dev-data-2/moafw-agricultural_wages-ol-mn-aji/data/processed
-
--**raw_data.py** : This file downloads the raw pdf's
--**interim.py** : This file extracts the data from pdf's
--**pre_processed.py** : This file process the data
--**processed.py** : This file maps the codes using Lgd mapping file
 
 ## Project Structure
 ------------

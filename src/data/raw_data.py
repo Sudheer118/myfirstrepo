@@ -1,118 +1,213 @@
-# This script downloads the raw pdfs
+#script to extract the trade data
 import requests
-from bs4 import BeautifulSoup
-from urllib.parse import urljoin
+import csv
+import json
+import time
+import random
+from datetime import datetime, timedelta, date
 from pathlib import Path
+from requests.exceptions import RequestException
 
 
-# CONFIG
+#  CONFIG 
 
-BASE = "https://desagri.gov.in"
-AJAX = f"{BASE}/wp-admin/admin-ajax.php"
-URL  = f"{BASE}/document-report-category/agriculture-wages-in-india/"
+TRADE_URL = "https://enam.gov.in/web/Ajax_ctrl/trade_data_list"
+TODAY = date.today()
 
-OUT_DIR = Path(__file__).resolve().parents[2] / "data/raw"
-OUT_DIR.mkdir(parents=True, exist_ok=True)
+OUTPUT_DIR = Path(__file__).resolve().parents[2]/"data/raw"
+EARLIEST_DATES_FILE = Path(__file__).resolve().parents[2]/"data/external/all_states_apmcs_earliest.csv"
+OUTPUT_CSV = OUTPUT_DIR /"full_trade_data.csv"
+OUTPUT_JSON = OUTPUT_DIR /"full_trade_data3.json"
+CHECKPOINT_FILE = OUTPUT_DIR/"apmc_checkpoint.json"
 
-SKIP_PREFIXES = ("ann", "om")
-SKIP_CONTAINS = ("modified-final-manucript-2019-20",)
+#  CHECKPOINT 
 
-
-# SESSION
-
-session = requests.Session()
-session.headers.update({
-    "User-Agent": "Mozilla/5.0",
-    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-    "Accept-Language": "en-US,en;q=0.5",
-})
+def load_checkpoint():
+    if CHECKPOINT_FILE.exists():
+        with open(CHECKPOINT_FILE, "r") as f:
+            return json.load(f)
+    return {}
 
 
-# UTILITIES
-
-def get_year_ids(page_url):
-    r = session.get(page_url, timeout=30)
-    r.raise_for_status()
-    soup = BeautifulSoup(r.text, "html.parser")
-
-    return [
-        opt["value"]
-        for opt in soup.select("#year_filter_sess option")
-        if opt.get("value")
-    ]
-
-def fetch_year_html(year_id):
-    payload = {
-        "action": "yearFilter",
-        "year_sess_catId": year_id,
-        "cat_id": 39,
-        "tax_id": "document-report-category",
-    }
-
-    r = session.post(
-        AJAX,
-        data=payload,
-        headers={"Referer": URL},
-        timeout=30,
-    )
-    r.raise_for_status()
-    return r.text
-
-def extract_pdf_from_post(post_url):
-    r = session.get(post_url, timeout=30)
-    r.raise_for_status()
-    soup = BeautifulSoup(r.text, "html.parser")
-
-    a = soup.select_one("a[href$='.pdf']")
-    return urljoin(BASE, a["href"]) if a else None
-
-def download_pdf(pdf_url):
-    filename = Path(pdf_url).name
-    filename_lc = filename.lower()
-
-    if filename_lc.startswith(SKIP_PREFIXES):
-        return
-
-    if any(s in filename_lc for s in SKIP_CONTAINS):
-        return
-
-    file_path = OUT_DIR / filename
-    if file_path.exists():
-        return
-
-    with session.get(pdf_url, stream=True, timeout=30) as r:
-        r.raise_for_status()
-        with file_path.open("wb") as f:
-            for chunk in r.iter_content(8192):
-                if chunk:
-                    f.write(chunk)
-
-    print("Downloaded:", filename)
+def save_checkpoint(state_name, apmc_name, last_date):
+    ck = load_checkpoint()
+    ck[f"{state_name}|{apmc_name}"] = last_date
+    with open(CHECKPOINT_FILE, "w") as f:
+        json.dump(ck, f, indent=2)
 
 
-# PROCESS PAGE
+#  FIXED FUNCTION — CHUNKED API CALL 
 
-def process_page():
-    print("Downloading Agriculture Wages data")
-    year_ids = get_year_ids(URL)
+def fetch_trade_data_in_chunks(session, state_name, apmc_name, start_date, end_date):
+    """Fetch trade data MONTH-WISE to avoid 500 Server Error"""
 
-    for year_id in year_ids:
-        html = fetch_year_html(year_id)
-        soup = BeautifulSoup(html, "html.parser")
+    all_data = []
+    current = start_date
 
-        # Direct PDF links
-        for a in soup.select("a[href$='.pdf']"):
-            download_pdf(urljoin(BASE, a["href"]))
+    while current <= end_date:
 
-        # PDFs inside document pages
-        for a in soup.select("a[href]"):
-            if "/document-report/" in a["href"]:
-                pdf_url = extract_pdf_from_post(urljoin(BASE, a["href"]))
-                if pdf_url:
-                    download_pdf(pdf_url)
+        # Start of chunk
+        chunk_start = current
+
+        # End of month
+        next_month = (current.replace(day=28) + timedelta(days=4)).replace(day=1)
+        chunk_end = next_month - timedelta(days=1)
+
+        if chunk_end > end_date:
+            chunk_end = end_date
+
+        print(f"   ↳ Fetching chunk {chunk_start} → {chunk_end}")
+
+        payload = {
+            "commodityName": "-- Select Commodity --",
+            "stateName": state_name,
+            "apmcName": apmc_name,
+            "fromDate": chunk_start.strftime("%Y-%m-%d"),
+            "toDate": chunk_end.strftime("%Y-%m-%d")
+        }
+
+        # Delay
+        time.sleep(random.uniform(1.0, 2.3))
+
+        # First attempt
+        try:
+            resp = session.post(TRADE_URL, data=payload, timeout=40)
+            resp.raise_for_status()
+            data = resp.json().get("data", [])
+            all_data.extend(data)
+
+        except Exception as e:
+            print(f"   Chunk failed ({e}). Retrying in 3 sec...")
+            time.sleep(3)
+
+            # Second attempt
+            resp = session.post(TRADE_URL, data=payload, timeout=40)
+            resp.raise_for_status()
+            data = resp.json().get("data", [])
+            all_data.extend(data)
+
+        # Move to next chunk
+        current = chunk_end + timedelta(days=1)
+
+    return all_data
 
 
-# RUN
+#  SAVE FUNCTION 
 
-process_page()
-print("DATA DOWNLOAD COMPLETED")
+def save_data(state_name, apmc_name, data, all_json, seen):
+
+    with open(OUTPUT_CSV, "a", newline="", encoding="utf-8") as out_csv:
+        writer = csv.DictWriter(out_csv, fieldnames=[
+            "state_name", "apmc_name", "commodity",
+            "min_price", "modal_price", "max_price",
+            "arrivals", "traded_qty", "unit", "date"
+        ])
+
+        for d in data:
+
+            row_id = (
+                state_name,
+                apmc_name,
+                d.get("commodity"),
+                d.get("created_at")
+            )
+
+            if row_id in seen:
+                continue
+
+            row = {
+                "state_name": state_name,
+                "apmc_name": apmc_name,
+                "commodity": d.get("commodity"),
+                "min_price": d.get("min_price"),
+                "modal_price": d.get("modal_price"),
+                "max_price": d.get("max_price"),
+                "arrivals": d.get("commodity_arrivals"),
+                "traded_qty": d.get("commodity_traded"),
+                "unit": d.get("Commodity_Uom"),
+                "date": d.get("created_at")
+            }
+
+            writer.writerow(row)
+            all_json.append(row)
+            seen.add(row_id)
+
+
+#  MAIN FUNCTION 
+
+def main():
+
+    # Load earliest dates
+    with open(EARLIEST_DATES_FILE, "r", encoding="utf-8") as f:
+        earliest_rows = list(csv.DictReader(f))
+
+    # Create CSV header if needed
+    if not OUTPUT_CSV.exists():
+        with open(OUTPUT_CSV, "w", newline="", encoding="utf-8") as out_csv:
+            writer = csv.DictWriter(out_csv, fieldnames=[
+                "state_name", "apmc_name", "commodity",
+                "min_price", "modal_price", "max_price",
+                "arrivals", "traded_qty", "unit", "date"
+            ])
+            writer.writeheader()
+
+    # Load JSON (avoid duplicates)
+    all_json = []
+    seen = set()
+
+    if OUTPUT_JSON.exists():
+        with open(OUTPUT_JSON, "r", encoding="utf-8") as jf:
+            all_json = json.load(jf)
+            for d in all_json:
+                seen.add((d["state_name"], d["apmc_name"], d["commodity"], d["date"]))
+
+    checkpoint = load_checkpoint()
+    session = requests.Session()
+
+    # Loop APMCs
+    for row in earliest_rows:
+
+        state_name = row["state_name"]
+        apmc_name = row["apmc_name"]
+        if row["earliest_date"] == "NONE":
+            continue
+        earliest_date = datetime.strptime(row["earliest_date"], "%Y-%m-%d").date()
+
+        key = f"{state_name}|{apmc_name}"
+
+        # Resume from last checkpoint
+        if key in checkpoint:
+            last_done = datetime.strptime(checkpoint[key], "%Y-%m-%d").date()
+            if last_done >= TODAY:
+                print(f"Skipping (already done): {state_name} / {apmc_name}")
+
+                continue
+            start_date = last_done + timedelta(days=1)
+        else:
+            start_date = earliest_date
+
+        print(f"\n→ Fetching {state_name} / {apmc_name}")
+        print(f"  From: {start_date}  To: {TODAY}")
+
+        # MONTH-WISE DATA (SAFE)
+        data = fetch_trade_data_in_chunks(session, state_name, apmc_name, start_date, TODAY)
+
+        # Save data
+        save_data(state_name, apmc_name, data, all_json, seen)
+
+        # Update checkpoint
+        save_checkpoint(state_name, apmc_name, TODAY.strftime("%Y-%m-%d"))
+
+        # Save JSON
+        with open(OUTPUT_JSON, "w", encoding="utf-8") as jf:
+            json.dump(all_json, jf, indent=2)
+
+        # Cooldown
+        time.sleep(random.uniform(2, 5))
+
+    print("\n DONE — Full trade data saved successfully!")
+
+
+# Run script
+if __name__ == "__main__":
+    main()
