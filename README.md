@@ -1,15 +1,34 @@
 
-# e-NAM
+# pmmy_mudra_loans
 ## Package Information
-- **Package Name**: Trde_Details
-- **Source Name**: Ministry of Agriculture & Farmers Welfare
-- **SKU**: {moafw-enam_mandis_trade_details-st-yr-abc}
-- **Resource Name**: Commodity wise trade details
-- **Data Extraction Link:** [e-NAM Mandis Trade Details](https://enam.gov.in/web/dashboard/trade-data)
-- **Description:** This dataset contains market-wise agricultural trade information including State, APMC, Commodity, price details (minimum, modal, and maximum), arrivals, quantity traded, unit, and date. The data is available for up to 10 years.
-- **Interim Data Location:** dev-data-2/moafw-enam_mandis_trade_details-st-yr-abc/data/interim
-- **Processed Data Location:** dev-data-2/mmoafw-enam_mandis_trade_details-st-yr-abc/data/processed
 
+**Package Name**: Mudra Loans
+- **Source Name**: Ministry of Finance
+- **SKU**: {mof-mudra_reports-in-yr-abc}
+- **Resource Names**: State Performance, Overall Performance, Bank Performance
+- **Data Extraction Link:** [PMMY - Mudra Reports](https://www.mudra.org.in/Home/ShowPDF)
+- **Description:** The PMMY performance reports present statewise, bankwise, and overall national  data on loan sanctions and disbursements over the past 10 years.
+
+State-wise Data Location :
+- **Raw Data Location:** dev-data-2/mof-mudra_state_perf-st-yr-abc/data/raw
+- **Interim Data Location:** dev-data-2/mof-mudra_state_perf-st-yr-abc/data/interim
+- **Processed Data Location:** dev-data-2/mof-mudra_state_perf-st-yr-abc/data/processed
+- **External Data Location:** dev-data-2/mof-mudra_state_perf-st-yr-abc/data/external
+- **State-wiseCodebook Location:** dev-data-2/mof-mudra_state_perf-st-yr-abc/pmmy_statewise_reports_codebook.xlsx
+
+Overall-wise Data Location :
+- **Raw Data Location:** dev-data-2/mof-mudra_overall_perf-in-yr-abc/data/raw
+- **Interim Data Location:** dev-data-2/mof-mudra_overall_perf-in-yr-abc/data/interim
+- **Processed Data Location:** dev-data-2/mof-mudra_overall_perf-in-yr-abc/data/processed
+- **External Data Location:** dev-data-2/mof-mudra_overall_perf-in-yr-abc/data/external
+- **Overall Codebook Location:**dev-data-2/mof-mudra_overall_perf-in-yr-abc/pmmy_reports_codebook.xlsx
+
+Bank-wise Data Location :
+- **Raw Data Location:** dev-data-2/mof-mudra_bank_perf-in-yr-abc/data/raw
+- **Interim Data Location:** dev-data-2/mof-mudra_bank_perf-in-yr-abc/data/interim
+- **Processed Data Location:** dev-data-2/mof-mudra_bank_perf-in-yr-abc/data/processed
+- **External Data Location:** dev-data-2/mof-mudra_bank_perf-in-yr-abc/data/external
+- **Bank Codebook Location:** dev-data-2/mof-mudra_bank_perf-in-yr-abc/pmmy_reports_codebook (1).xlsx
 
 ## Project Structure
 ------------
