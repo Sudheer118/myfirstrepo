@@ -1,0 +1,63 @@
+{
+	"$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"workspaceName": {
+			"value": "wssynapseflm89"
+		},
+		"AzureSqlDatabase1_password": {
+			"value": ""
+		},
+		"SqlServer1_password": {
+			"value": ""
+		},
+		"azsql_password": {
+			"value": ""
+		},
+		"ls_blobstorage_accountKey": {
+			"value": ""
+		},
+		"wssynapseflm89-WorkspaceDefaultSqlServer_connectionString": {
+			"value": "Integrated Security=False;Encrypt=True;Connection Timeout=30;Data Source=tcp:wssynapseflm89.sql.azuresynapse.net,1433;Initial Catalog=@{linkedService().DBName}"
+		},
+		"AzureSqlDatabase1_properties_typeProperties_server": {
+			"value": "flmserver83.database.windows.net"
+		},
+		"AzureSqlDatabase1_properties_typeProperties_database": {
+			"value": "flmdb"
+		},
+		"AzureSqlDatabase1_properties_typeProperties_userName": {
+			"value": "admin83"
+		},
+		"RestService_properties_typeProperties_url": {
+			"value": "https://jsonplaceholder.typicode.com/"
+		},
+		"SqlServer1_properties_typeProperties_server": {
+			"value": "vmflm83"
+		},
+		"SqlServer1_properties_typeProperties_database": {
+			"value": "DEMO"
+		},
+		"SqlServer1_properties_typeProperties_userName": {
+			"value": "vmsql83"
+		},
+		"azsql_properties_typeProperties_server": {
+			"value": "flmserver83.database.windows.net"
+		},
+		"azsql_properties_typeProperties_database": {
+			"value": "flmdb"
+		},
+		"azsql_properties_typeProperties_userName": {
+			"value": "admin83"
+		},
+		"ls_blobstorage_properties_typeProperties_url": {
+			"value": "https://blobflm0909.dfs.core.windows.net/"
+		},
+		"wssynapseflm89-WorkspaceDefaultStorage_properties_typeProperties_url": {
+			"value": "https://adlsge2flm0909.dfs.core.windows.net"
+		},
+		"tr_storageevent_properties_typeProperties_scope": {
+			"value": "/subscriptions/4c9d9413-2c6f-4ee3-ab87-b8916032ca2c/resourceGroups/flm090920226/providers/Microsoft.Storage/storageAccounts/adlsge2flm0909"
+		}
+	}
+}
