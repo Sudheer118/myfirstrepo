@@ -1,0 +1,24 @@
+{
+	"name": "tr_storageevent",
+	"properties": {
+		"annotations": [],
+		"runtimeState": "Stopped",
+		"pipelines": [
+			{
+				"pipelineReference": {
+					"referenceName": "Pipeline 4",
+					"type": "PipelineReference"
+				}
+			}
+		],
+		"type": "BlobEventsTrigger",
+		"typeProperties": {
+			"blobPathBeginsWith": "/input/blobs/Customer/customer1.csv",
+			"ignoreEmptyBlobs": false,
+			"scope": "/subscriptions/4c9d9413-2c6f-4ee3-ab87-b8916032ca2c/resourceGroups/flm090920226/providers/Microsoft.Storage/storageAccounts/adlsge2flm0909",
+			"events": [
+				"Microsoft.Storage.BlobCreated"
+			]
+		}
+	}
+}

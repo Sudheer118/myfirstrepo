@@ -1,0 +1,186 @@
+{
+	"name": "df_scd_type1",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"linkedService": {
+						"referenceName": "wssynapseflm89-WorkspaceDefaultStorage",
+						"type": "LinkedServiceReference"
+					},
+					"name": "sourceemp"
+				},
+				{
+					"linkedService": {
+						"referenceName": "AzureSqlDatabase1",
+						"type": "LinkedServiceReference"
+					},
+					"name": "targetsqldb"
+				}
+			],
+			"sinks": [
+				{
+					"linkedService": {
+						"referenceName": "AzureSqlDatabase1",
+						"type": "LinkedServiceReference"
+					},
+					"name": "sinkinsert"
+				},
+				{
+					"linkedService": {
+						"referenceName": "AzureSqlDatabase1",
+						"type": "LinkedServiceReference"
+					},
+					"name": "updatesink"
+				}
+			],
+			"transformations": [
+				{
+					"name": "hashcol"
+				},
+				{
+					"name": "select"
+				},
+				{
+					"name": "join"
+				},
+				{
+					"name": "split1"
+				},
+				{
+					"name": "addauditcols"
+				},
+				{
+					"name": "updateauditcol"
+				},
+				{
+					"name": "alterRow"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          id as short,",
+				"          name as string,",
+				"          city as string,",
+				"          salary as integer",
+				"     ),",
+				"     useSchema: false,",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false,",
+				"     format: 'delimited',",
+				"     fileSystem: 'input',",
+				"     folderPath: 'employee',",
+				"     fileName: 'emp.csv',",
+				"     columnDelimiter: ',',",
+				"     escapeChar: '\\\\',",
+				"     quoteChar: '\\\"',",
+				"     columnNamesAsHeader: true) ~> sourceemp",
+				"source(output(",
+				"          tgt_empid as integer,",
+				"          tgt_hashcol as long",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     format: 'query',",
+				"     store: 'sqlserver',",
+				"     query: 'select empid as tgt_empid , hashcol as tgt_hashcol from EMPSCDTYPE1',",
+				"     isolationLevel: 'READ_UNCOMMITTED') ~> targetsqldb",
+				"sourceemp derive(hashcol = crc32(id,name,city,salary)) ~> hashcol",
+				"hashcol select(mapColumn(",
+				"          each(match(1==1),",
+				"               concat('src_',$$) = $$)",
+				"     ),",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> select",
+				"select, targetsqldb join(src_id == tgt_empid,",
+				"     joinType:'left',",
+				"     matchType:'exact',",
+				"     ignoreSpaces: false,",
+				"     broadcast: 'auto')~> join",
+				"join split(isNull(tgt_empid),",
+				"     src_id==tgt_empid && src_hashcol!=tgt_hashcol,",
+				"     disjoint: false) ~> split1@(insert, update)",
+				"split1@insert derive(src_createdate = currentTimestamp(),",
+				"          src_updatedate = currentTimestamp(),",
+				"          src_createby = 'dataflow',",
+				"          src_updateby = 'dataflow') ~> addauditcols",
+				"split1@update derive(src_updateby = 'dataflow_updated',",
+				"          src_updatedate = currentTimestamp()) ~> updateauditcol",
+				"updateauditcol alterRow(updateIf(1==1)) ~> alterRow",
+				"addauditcols sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          EMPID as integer,",
+				"          EMPNAME as string,",
+				"          EMPSAL as long,",
+				"          EMPCITY as string,",
+				"          CREATEDDATE as timestamp,",
+				"          UPDATEEDDATE as timestamp,",
+				"          CREATEDBY as string,",
+				"          UPDATEDBY as string,",
+				"          HASHCOL as long",
+				"     ),",
+				"     format: 'table',",
+				"     store: 'sqlserver',",
+				"     schemaName: 'dbo',",
+				"     tableName: 'EMPSCDTYPE1',",
+				"     insertable: true,",
+				"     updateable: false,",
+				"     deletable: false,",
+				"     upsertable: false,",
+				"     stagingSchemaName: '',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError',",
+				"     mapColumn(",
+				"          EMPID = src_id,",
+				"          EMPNAME = src_name,",
+				"          EMPSAL = src_salary,",
+				"          EMPCITY = src_city,",
+				"          CREATEDDATE = src_createdate,",
+				"          UPDATEEDDATE = src_updatedate,",
+				"          CREATEDBY = src_createby,",
+				"          UPDATEDBY = src_updateby,",
+				"          HASHCOL = src_hashcol",
+				"     )) ~> sinkinsert",
+				"alterRow sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          EMPID as integer,",
+				"          EMPNAME as string,",
+				"          EMPSAL as long,",
+				"          EMPCITY as string,",
+				"          CREATEDDATE as timestamp,",
+				"          UPDATEEDDATE as timestamp,",
+				"          CREATEDBY as string,",
+				"          UPDATEDBY as string,",
+				"          HASHCOL as long",
+				"     ),",
+				"     format: 'table',",
+				"     store: 'sqlserver',",
+				"     schemaName: 'dbo',",
+				"     tableName: 'EMPSCDTYPE1',",
+				"     insertable: false,",
+				"     updateable: true,",
+				"     deletable: false,",
+				"     upsertable: false,",
+				"     keys:['EMPID'],",
+				"     stagingSchemaName: '',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError',",
+				"     mapColumn(",
+				"          EMPID = tgt_empid,",
+				"          EMPNAME = src_name,",
+				"          EMPSAL = src_salary,",
+				"          EMPCITY = src_city,",
+				"          UPDATEEDDATE = src_updatedate,",
+				"          UPDATEDBY = src_updateby,",
+				"          HASHCOL = src_hashcol",
+				"     )) ~> updatesink"
+			]
+		}
+	}
+}

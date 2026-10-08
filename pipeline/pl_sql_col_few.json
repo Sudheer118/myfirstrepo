@@ -1,0 +1,71 @@
+{
+	"name": "pl_sql_col_few",
+	"properties": {
+		"activities": [
+			{
+				"name": "Copy data sql adlsgen2",
+				"type": "Copy",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "AzureSqlSource",
+						"sqlReaderQuery": "SELECT TOP (1000) [AddressID]\n      ,[AddressLine1]\n      ,[AddressLine2]\n      ,[City]\n      ,[StateProvince]\n      ,[CountryRegion]\n      ,[PostalCode]\n      ,[rowguid]\n      ,[ModifiedDate]\n  FROM [SalesLT].[Address]",
+						"queryTimeout": "02:00:00",
+						"partitionOption": "None"
+					},
+					"sink": {
+						"type": "DelimitedTextSink",
+						"storeSettings": {
+							"type": "AzureBlobFSWriteSettings"
+						},
+						"formatSettings": {
+							"type": "DelimitedTextWriteSettings",
+							"quoteAllText": true,
+							"fileExtension": ".txt"
+						}
+					},
+					"enableStaging": false,
+					"translator": {
+						"type": "TabularTranslator",
+						"typeConversion": true,
+						"typeConversionSettings": {
+							"allowDataTruncation": true,
+							"treatBooleanAsNumber": false
+						}
+					}
+				},
+				"inputs": [
+					{
+						"referenceName": "az_sql",
+						"type": "DatasetReference",
+						"parameters": {
+							"SchemaName": "\"\"",
+							"TableName": "\"\""
+						}
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "azuresql_csv",
+						"type": "DatasetReference",
+						"parameters": {
+							"FolderName": "Customer",
+							"FileName": "customer1.csv"
+						}
+					}
+				]
+			}
+		],
+		"annotations": [],
+		"lastPublishTime": "2026-09-10T14:45:57Z"
+	},
+	"type": "Microsoft.Synapse/workspaces/pipelines"
+}
